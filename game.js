@@ -95,8 +95,9 @@ function Spin(spinner){
                         showWin(0);
                 }
         }else{
-            for(const reel of reels)
-                reel.spin();
+            for(const index in reels)
+                if(index > 0)
+                    reels[index].spin();
 
             for(const reel of reels)
                 if(reel.output == 'G')gifts_num++;
