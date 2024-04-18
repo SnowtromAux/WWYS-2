@@ -184,7 +184,7 @@ function showWin(win){
         else
             series.nw = Number(series.nw) + Number(win);
 
-        if(win > series.max_win)
+        if(win > series.max_win && gfts != 3)
             series.max_win = win;
 
         series.tw = Number(series.tw) + Number(win);
@@ -193,7 +193,7 @@ function showWin(win){
     if(win == 0)
         hm.eg++;
 
-    if(win > hm.max_win)
+    if(win > hm.max_win && gfts != 3)
         hm.max_win = win;
 
     if(gfts == 3)
