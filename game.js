@@ -6,7 +6,6 @@ let autoplay = false;
 const hm = new HardMeters();
 const series = new Series();
 
-
 Setup();
 
 
@@ -60,84 +59,62 @@ function Spin(spinner){
 
         const will_respin = haveToRespin();
 
-        if(gifts_num == 2 || will_respin == "respin"){
+        if(will_respin == "respin"){
             document.getElementById("respin").innerHTML = "there is respin";
             document.getElementById("respin").style.display = "block";
             respin_state = 1;
             return;
         }
-
-        if(gifts_num == 3)
-            showWin(JACKPOT , true);
-        else
-            showWin(will_respin); 
+        
+        showWin(will_respin); 
     }else if(respin_state == 1){
-        for(const reel of reels)
-            if(reel.output == 'G')gifts_num++;
-
-        if(gifts_num == 2){
+        if(prev_progress.gifts == 1){
             for(const index in reels)
-                if(reels[index].output != 'G'){
-                    reels[index].spin();
-                    if(reels[index].output == 'G'){
-                        if(autoplay){
-                            series.bg++;
-                            series.update();
-                        }
-                        hm.bg++;
-                        hm.update();
-                        
-                        showWin(JACKPOT , true);
-                    }
-                    else if(index != 1)
-                        showWin(reels[index].output);
-                    else
-                        showWin(0);
+                if(reels[index].output != 'G')
+                    reels[index].respinForGifts();
+
+            for(const reel of reels)
+                if(reel.output == 'G')gifts_num++;
+
+            if(gifts_num == 3){
+                if(autoplay){
+                    series.bg++;
+                    series.update();
                 }
+                hm.bg++;
+                hm.update();
+                showWin(JACKPOT);
+            }else
+                showWin(0);
+                    
         }else{
             for(const index in reels)
                 if(index > 0)
                     reels[index].spin();
 
-            for(const reel of reels)
-                if(reel.output == 'G')gifts_num++;
-
-            if(gifts_num == 2){
-                document.getElementById("respin").innerHTML = "there is respin";
-                document.getElementById("respin").style.display = "block";
-                respin_state = 2;
-                return;
-            }
-
             const output = haveToRespin();
+            // if(output == "respin"){
+            //     document.getElementById("respin").innerHTML = "there is respin";
+            //     document.getElementById("respin").style.display = "block";
+            //     respin_state = 2;
+            //     return;
+            // }
             if(output == "respin")showWin(0);
             else showWin(output);
         }
-    }else{
-        for(const reel of reels)
-            if(reel.output == 'G')gifts_num++;
+    }//else{
+    //     for(const index in reels)
+    //         if(reels[index].output != 'G')
+    //             reels[index].respinForGifts();
 
-        if(gifts_num == 2){
-            for(const index in reels)
-                if(reels[index].output != 'G'){
-                    reels[index].spin();
-                    if(reels[index].output == 'G'){
-                        if(autoplay){
-                            series.bg++;
-                            series.update();
-                        }
-                        hm.bg++;
-                        hm.update();
+    //     for(const reel of reels)
+    //         if(reel.output == 'G')gifts_num++;
 
-                        showWin(JACKPOT , true);
-                    }
-                    else if(index != 1)
-                        showWin(reels[index].output);
-                    else
-                        showWin(0);
-                }
-        }
-    }
+    //     if(gifts_num == 3)
+    //         showWin(JACKPOT);
+    //     else
+    //         showWin(0);
+    // }
 }
 
 function haveToRespin(){
@@ -155,6 +132,8 @@ function haveToRespin(){
         
         return JACKPOT;
     }
+    if(znak == "G")
+        return "respin";
 
     if(left == "G")
         return Number(right);
@@ -171,7 +150,7 @@ function haveToRespin(){
             return result_plus;
         case "-":
             const result_minus = Number(left) - Number(right);
-            return result_minus >= 0 ? result_minus : "respin";
+            return result_minus >= 0 ? result_minus : 0;
         case "*":
             const result_multiplication = Number(left) * Number(right);
             return result_multiplication;
@@ -183,7 +162,7 @@ function haveToRespin(){
     }
 }
 
-function showWin(win , has_jp){
+function showWin(win){
     document.getElementById("respin").style.display = "none";
 
     respin_state = 0;
@@ -191,11 +170,16 @@ function showWin(win , has_jp){
     player.balance = Number(player.balance) + Number(win);
 
     bot.has_to_stop = true;
+
+    let gfts = 0;
+    for(const reel of reels)
+        if(reel.output == "G")gfts++;
+
     if(autoplay){
         if(win == 0)
             series.eg++;
 
-        if(has_jp)
+        if(gfts == 3)
             series.bw = Number(series.bw) + Number(win);
         else
             series.nw = Number(series.nw) + Number(win);
@@ -212,7 +196,7 @@ function showWin(win , has_jp){
     if(win > hm.max_win)
         hm.max_win = win;
 
-    if(has_jp)
+    if(gfts == 3)
         hm.bw = Number(hm.bw) + Number(win);
     else
         hm.nw = Number(hm.nw) + Number(win);
